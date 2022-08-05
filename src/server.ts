@@ -1,6 +1,8 @@
 import express from 'express';
+import { Router, Request, Response } from 'express';
 import bodyParser from 'body-parser';
 import {filterImageFromURL, deleteLocalFiles} from './util/util';
+
 
 import * as dotenv from "dotenv";
 import { env } from 'process';
@@ -13,7 +15,6 @@ dotenv.config();
   const app = express();
 
   // Set the network port
-  
   const port = process.env.PORT;
   
   // Use the body parser middleware for post requests
@@ -34,13 +35,37 @@ dotenv.config();
   //   the filtered image file [!!TIP res.sendFile(filteredpath); might be useful]
 
   /**************************************************************************** */
+  app.get("/filteredimage/", async (req: Request, res: Response) => {
+    let { image_url } = req.query;
+
+    //Validating the image_url query
+    if ( !image_url ) {
+      return res.status(400).send(`image_url is required`);
+    }
+
+    // Handling error
+    try {
+      const filteredpath = await filterImageFromURL(image_url);
+
+      await res.status(200).sendFile(filteredpath, {}, (err) => {
+        if (err) {
+          return res.status(422).send(`Unable to process image`);
+        }
+        deleteLocalFiles([filteredpath]);
+      });
+    }
+
+    catch (err) {
+      res.status(422).send(`Kindly crosscheck the image_url`);
+    }
+  });
 
   //! END @TODO1
   
   // Root Endpoint
   // Displays a simple message to the user
-  app.get( "/", async ( req, res ) => {
-    res.send("try GET /filteredimage?image_url={{}}")
+  app.get( "/", async ( req: Request, res: Response ) => {
+    res.status(200).send("try GET /filteredimage?image_url={{}}")
   } );
   
 
