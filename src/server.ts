@@ -2,13 +2,19 @@ import express from 'express';
 import bodyParser from 'body-parser';
 import {filterImageFromURL, deleteLocalFiles} from './util/util';
 
+import * as dotenv from "dotenv";
+import { env } from 'process';
+
+dotenv.config();
+
 (async () => {
 
   // Init the Express application
   const app = express();
 
   // Set the network port
-  const port = process.env.PORT || 8082;
+  
+  const port = process.env.PORT;
   
   // Use the body parser middleware for post requests
   app.use(bodyParser.json());
